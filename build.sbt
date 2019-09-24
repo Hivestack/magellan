@@ -10,6 +10,7 @@ crossScalaVersions := Seq("2.12.10")
 
 sparkVersion := "2.4.4"
 
+// As of Scala 2.12.* this option is broken when combined with implicits. Disabled for now
 //scalacOptions += "-optimize"
 
 val testSparkVersion = settingKey[String]("The version of Spark to test against.")
@@ -24,7 +25,7 @@ sparkComponents := Seq("core", "sql")
 
 libraryDependencies ++= Seq(
   "commons-io" % "commons-io" % "2.6",
-  "com.google.guava" % "guava" % "28.1-jre",
+  "com.google.guava" % "guava" % "15.0",
   "org.slf4j" % "slf4j-api" % "1.7.28" % "provided",
   "com.lihaoyi" %% "fastparse" % "2.1.3" % "provided",
   "org.scalatest" %% "scalatest" % "3.0.8" % "test",

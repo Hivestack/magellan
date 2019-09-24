@@ -93,10 +93,6 @@ object WKTParser {
   def expr[_: P]: P[Shape] = P(point | pointEmpty | linestring | polygonWithoutHoles | polygonWithHoles ~ End)
 
   def parseAll(text: String): Shape = {
-//    expr.parse(text) match {
-//      case Success(value: Shape, _) => value
-//      case Failure(_, _, stack) => throw new RuntimeException(stack.toString)
-//    }
     val Success(result, _) = parse(text, expr(_))
 
     result
