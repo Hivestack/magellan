@@ -1,16 +1,16 @@
 name := "magellan"
 
-version := "1.0.6-SNAPSHOT"
+version := "1.0.6.1"
 
 organization := "harsha2010"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.10"
 
-crossScalaVersions := Seq("2.11.8")
+crossScalaVersions := Seq("2.12.10")
 
-sparkVersion := "2.3.1"
+sparkVersion := "2.4.4"
 
-scalacOptions += "-optimize"
+//scalacOptions += "-optimize"
 
 val testSparkVersion = settingKey[String]("The version of Spark to test against.")
 
@@ -23,14 +23,16 @@ testHadoopVersion := sys.props.getOrElse("hadoop.testVersion", "2.7.3")
 sparkComponents := Seq("core", "sql")
 
 libraryDependencies ++= Seq(
-  "commons-io" % "commons-io" % "2.4",
-  "com.google.guava" % "guava" % "14.0.1" % "provided",
-  "org.slf4j" % "slf4j-api" % "1.7.16" % "provided",
-  "com.lihaoyi" % "fastparse_2.11" % "0.4.3" % "provided",
-  "org.scalatest" %% "scalatest" % "2.2.1" % "test",
+  "commons-io" % "commons-io" % "2.6",
+  "com.google.guava" % "guava" % "28.1-jre",
+  "org.slf4j" % "slf4j-api" % "1.7.28" % "provided",
+  "com.lihaoyi" %% "fastparse" % "2.1.3" % "provided",
+  "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "com.vividsolutions" % "jts" % "1.13" % "test",
   "com.esri.geometry" % "esri-geometry-api" % "1.2.1"
 )
+
+libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 
 libraryDependencies ++= Seq(
   "org.apache.hadoop" % "hadoop-client" % testHadoopVersion.value % "test",
@@ -80,13 +82,6 @@ pomExtra := (
 spName := "harsha2010/magellan"
 
 parallelExecution in Test := false
-
-ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting := {
-  if (scalaBinaryVersion.value == "2.10") false
-  else true
-}
-
-credentials += Credentials(Path.userHome / ".ivy2" / ".sbtcredentials")
 
 licenses += "Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0")
 

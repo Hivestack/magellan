@@ -3,6 +3,7 @@ package magellan.catalyst
 import magellan.{Geometry, Point, TestSparkContext}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.magellan.dsl.expressions._
+import org.json4s.Formats
 import org.json4s.jackson.JsonMethods.parse
 import org.scalatest.FunSuite
 
@@ -16,7 +17,7 @@ class AsGeoJSONSuite extends FunSuite with TestSparkContext {
     val df = sc.parallelize(points).toDF("id", "point")
     val withJson = df.withColumn("json", $"point" asGeoJSON)
     val json = withJson.select("json").map { case Row(s: String) =>  s}.take(1)(0)
-    implicit val formats = org.json4s.DefaultFormats
+    implicit val formats: Formats = org.json4s.DefaultFormats
     val result = parse(json).extract[Geometry]
     val shapes = result.shapes
     // expect a single point

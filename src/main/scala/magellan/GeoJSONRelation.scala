@@ -54,7 +54,7 @@ case class GeoJSONRelation(
       classOf[NullWritable],
       classOf[Text]).flatMap {
       case (k, v) =>
-        val line = v.toString()
+        val line = v.toString
         parseShapeWithMeta(line)
     }.map {
       case (shape: Shape, meta: Option[Map[String, String]]) =>
@@ -64,7 +64,7 @@ case class GeoJSONRelation(
 
   private def parseShapeWithMeta(line: String) = {
     val tree = parse(line)
-    implicit val formats = org.json4s.DefaultFormats
+    implicit val formats: Formats = org.json4s.DefaultFormats
     val result = tree.extract[GeoJSON]
     result.features.flatMap { f =>
       f.geometry.shapes.map(shape => (shape, f.properties))
