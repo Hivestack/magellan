@@ -18,56 +18,50 @@ package magellan
 
 import com.vividsolutions.jts.io.WKTReader
 import org.scalatest.FunSuite
+import fastparse.Implicits._
+import fastparse.Parsed.Success
+import fastparse.parse
 
 class WKTParserSuite extends FunSuite {
 
   test("parse int") {
-    val parsed = WKTParser.int.parse("-30")
-    assert(parsed.index === 3)
-    assert(parsed.get.value ===  "-30")
+    val Success(result, _) = parse("-30", WKTParser.int(_))
+    assert(result ===  "-30")
   }
 
   test("parse float") {
-    val parsed = WKTParser.float.parse("-79.470579")
-    assert(parsed.get.value === "-79.470579")
+    val Success(result, _) = parse("-79.470579", WKTParser.float(_))
+    assert(result === "-79.470579")
   }
 
   test("parse number") {
-    val parsed = WKTParser.number.parse("-79.470579")
-    assert(parsed.get.value === -79.470579)
+    val Success(result, _) = parse("-79.470579", WKTParser.number(_))
+    assert(result === -79.470579)
   }
 
   test("parse point") {
-    val parsed = WKTParser.point.parse("POINT (30 10)")
-    assert(parsed.index == 13)
-    val p = parsed.get.value
+    val Success(p, _) = parse("POINT (30 10)", WKTParser.point(_))
     assert(p.getX() === 30.0)
     assert(p.getY() === 10.0)
   }
 
   test("parse linestring") {
-    var parsed = WKTParser.linestring.parse("LINESTRING (30 10, 10 30, 40 40)")
-    var p: PolyLine = parsed.get.value
+    val Success(p, _) = parse("LINESTRING (30 10, 10 30, 40 40)", WKTParser.linestring(_))
     assert(p.getNumRings() === 1)
     assert(p.length === 3)
 
-    parsed = WKTParser.linestring.parse(
-      "LINESTRING (-79.470579 35.442827,-79.469465 35.444889,-79.468907 35.445829,-79.468294 35.446608,-79.46687 35.447893)")
-
-    p = parsed.get.value
-    assert(p.length === 5)
+    val Success(p2, _) = parse("LINESTRING (-79.470579 35.442827,-79.469465 35.444889,-79.468907 35.445829,-79.468294 35.446608,-79.46687 35.447893)", WKTParser.linestring(_))
+    assert(p2.length === 5)
 
   }
 
   test("parse polygon without holes") {
-    var parsed = WKTParser.polygonWithoutHoles.parse("POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))")
-    val p: Polygon = parsed.get.value
+    val Success(p, _) = parse("POLYGON ((30 10, 40 40, 20 40, 10 20, 30 10))", WKTParser.polygonWithoutHoles(_))
     assert(p.length === 5)
   }
 
   test("parse polygon with holes") {
-    val parsed = WKTParser.polygonWithHoles.parse("POLYGON ((35 10, 45 45, 15 40, 10 20, 35 10), (20 30, 35 35, 30 20, 20 30))")
-    val p: Polygon = parsed.get.value
+    val Success(p, _) = parse("POLYGON ((35 10, 45 45, 15 40, 10 20, 35 10), (20 30, 35 35, 30 20, 20 30))", WKTParser.polygonWithHoles(_))
     assert(p.getNumRings() == 2)
     assert(p.getRing(1) == 5)
     assert(p.getVertex(4) === Point(35.0, 10.0))
@@ -76,8 +70,7 @@ class WKTParserSuite extends FunSuite {
   }
 
   test("parse Polygon without space") {
-    val parsed = WKTParser.polygonWithHoles.parse("POLYGON((35 10, 45 45, 15 40, 10 20, 35 10), (20 30, 35 35, 30 20, 20 30))")
-    val p: Polygon = parsed.get.value
+    val Success(p, _) = parse("POLYGON((35 10, 45 45, 15 40, 10 20, 35 10), (20 30, 35 35, 30 20, 20 30))", WKTParser.polygonWithHoles(_))
     assert(p.getNumRings() == 2)
     assert(p.getRing(1) == 5)
     assert(p.getVertex(4) === Point(35.0, 10.0))
@@ -111,7 +104,7 @@ class WKTParserSuite extends FunSuite {
     val n = 100000
 
     time(exec(text, n, parseUsingJTS))
-    time(exec(text, n, (s: String) => WKTParser.linestring.parse(s)))
+    time(exec(text, n, (s: String) => parse(s, WKTParser.linestring(_))))
 
   }
 

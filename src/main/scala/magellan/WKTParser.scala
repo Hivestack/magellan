@@ -16,63 +16,64 @@
 
 package magellan
 
-import fastparse.all._
-import fastparse.core.Parsed.{Failure, Success}
+import fastparse._, NoWhitespace._
+import fastparse.Parsed.{Success, Failure}
+import fastparse.Implicits._
 
 import scala.collection.mutable.ListBuffer
 
 object WKTParser {
 
-  def whitespace: P[String] = P(" ") map {_.toString}
+  def whitespace[_: P]: P[_] = P(" ")
 
-  val posInt: P[String] = P(CharIn('0'to'9').rep(1).!)
+  def posInt[_: P]: P[String] = P(CharIn("0-9")).rep(1).!.map(_.toString)
 
-  val negInt: P[String] = P("-" ~ posInt) map {"-" + _}
+  def negInt[_: P]: P[String] = P("-" ~ posInt).map("-" + _).!.map(_.toString)
 
-  val int: P[String] = P(posInt | negInt)
+  def int[_: P]: P[String] = P(posInt | negInt).!.map(_.toString)
 
-  val float: P[String] = P(int ~ P(".") ~ posInt) map { case (x , y) => (x + "." + y)}
+  def float[_: P]: P[String] = P(int ~ P(".") ~ posInt).map{case (x , y) => (x + "." + y)}.!.map(_.toString)
 
-  val number = P(float | int) map {_.toDouble}
+  def number[_: P]: P[Double] = P(float | int).!.map(_.toDouble)
 
-  def point0: P[String] = P("""POINT""") map {_.toString}
+  def point0[_: P]: P[_] = P("""POINT""").!.map(_.toString)
 
-  def empty0: P[String] = P("""EMPTY""") map {_.toString}
+  def empty0[_: P]: P[_] = P("""EMPTY""").!.map(_.toString)
 
-  def comma: P[String] = P(",") map {_.toString}
+  def comma[_: P]: P[_] = P(",").!.map(_.toString)
 
-  def leftBrace: P[String] = P("(") map {_.toString}
+  def leftBrace[_: P]: P[String] = P("(").!.map(_.toString)
 
-  def rightBrace: P[String] = P(")") map {_.toString}
+  def rightBrace[_: P]: P[String] = P(")").!.map(_.toString)
 
-  def coords: P[Point] =  P(number ~ whitespace ~ number) map {
+  def coords[_: P]: P[Point] =  P(number ~ whitespace ~ number).map{
     case (x, _, y) => Point(x, y)
   }
 
-  def ring: P[Array[Point]] = P(leftBrace ~ coords.rep(1, (comma ~ whitespace | comma)) ~ rightBrace) map {
+  def ring[_: P]: P[Array[Point]] = P(leftBrace ~ coords.rep(1, (comma ~ whitespace | comma)) ~ rightBrace) map {
     case (_, x ,_) => x.toArray
   }
 
-  def point: P[Point] = P(point0 ~ whitespace.? ~ leftBrace ~ coords ~ rightBrace) map {
+  def point[_: P]: P[Point] = P(point0 ~ whitespace.? ~ leftBrace ~ coords ~ rightBrace) map {
     case (_ , _, _, p, _) => p
   }
 
-  def pointEmpty: P[Shape] = P(point0 ~ whitespace ~ empty0) map {_ => NullShape}
+  def pointEmpty[_: P]: P[Shape] = P(point0 ~ whitespace ~ empty0) map {_ => NullShape}
 
-  def linestring0: P[String] = P("""LINESTRING""") map {_.toString}
+  def linestring0[_: P]: P[String] = P("""LINESTRING""") map {_.toString}
 
-  def linestring: P[PolyLine] = P(linestring0 ~ whitespace.? ~ ring) map {
+  def linestring[_: P]: P[PolyLine] = P(linestring0 ~ whitespace.? ~ ring) map {
     case (_ , _, x) => PolyLine(Array(0), x)
   }
 
-  def polygon0: P[String] = P("""POLYGON""") map {_.toString}
+  def polygon0[_: P]: P[String] = P("""POLYGON""") map {_.toString}
 
-  def polygonWithoutHoles: P[Polygon] =
+  def polygonWithoutHoles[_: P]: P[Polygon] =
     P(polygon0 ~ whitespace.? ~ P("((") ~ coords.rep(1, (comma ~ whitespace | comma)) ~ P("))")) map {
     case (_ , _, x ) => Polygon(Array(0), x.toArray)
   }
 
-  def polygonWithHoles: P[Polygon] =
+  def polygonWithHoles[_: P]: P[Polygon] =
     P(polygon0 ~ whitespace.? ~ P("(") ~ ring.rep(1, (comma ~ whitespace | comma)) ~ P(")")) map {
     case (_ , _, x) =>
       val indices = ListBuffer[Int]()
@@ -89,13 +90,12 @@ object WKTParser {
       Polygon(indices.toArray, points.toArray)
   }
 
-  def expr: P[Shape] = P(point | pointEmpty | linestring | polygonWithoutHoles | polygonWithHoles ~ End)
+  def expr[_: P]: P[Shape] = P(point | pointEmpty | linestring | polygonWithoutHoles | polygonWithHoles ~ End)
 
   def parseAll(text: String): Shape = {
-    expr.parse(text) match {
-      case Success(value, _) => value
-      case Failure(parser, index, stack) => throw new RuntimeException(stack.toString)
-    }
+    val Success(result, _) = parse(text, expr(_))
+
+    result
   }
 
 }

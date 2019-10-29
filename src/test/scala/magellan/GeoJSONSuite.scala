@@ -17,6 +17,7 @@
 package magellan
 
 import org.apache.spark.sql.Row
+import org.json4s.Formats
 import org.json4s.jackson.JsonMethods.parse
 import org.scalatest.FunSuite
 
@@ -199,7 +200,7 @@ class GeoJSONSuite extends FunSuite with TestSparkContext {
         }
        """
 
-    implicit val formats = org.json4s.DefaultFormats
+    implicit val formats: Formats = org.json4s.DefaultFormats
     val result = parse(json).extract[Feature]
     val shapes = result.geometry.shapes
     // expect a single point
@@ -224,7 +225,7 @@ class GeoJSONSuite extends FunSuite with TestSparkContext {
         }
        """
 
-    implicit val formats = org.json4s.DefaultFormats
+    implicit val formats: Formats = org.json4s.DefaultFormats
     val result = parse(json).extract[Feature]
     val shapes = result.geometry.shapes
     // expect a single polygon
@@ -243,7 +244,7 @@ class GeoJSONSuite extends FunSuite with TestSparkContext {
         }
        """
 
-    implicit val formats = org.json4s.DefaultFormats
+    implicit val formats: Formats = org.json4s.DefaultFormats
     val result = parse(json).extract[Feature]
     val shapes = result.geometry.shapes
     // expect a single polyline
