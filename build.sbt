@@ -1,12 +1,12 @@
 name := "magellan"
 
-version := "1.0.6.1"
+version := "2.0.0.0"
 
 organization := "harsha2010"
 
-scalaVersion := "2.12.10"
+scalaVersion := "2.12.11"
 
-crossScalaVersions := Seq("2.12.10")
+crossScalaVersions := Seq("2.12.11")
 
 sparkVersion := "2.4.4"
 
@@ -19,16 +19,22 @@ testSparkVersion := sys.props.get("spark.testVersion").getOrElse(sparkVersion.va
 
 val testHadoopVersion = settingKey[String]("The version of Hadoop to test against.")
 
-testHadoopVersion := sys.props.getOrElse("hadoop.testVersion", "2.7.3")
+testHadoopVersion := sys.props.getOrElse("hadoop.testVersion", "3.2.1")
 
 sparkComponents := Seq("core", "sql")
 
+dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % "2.10.2"
+
+dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.10.2"
+
+dependencyOverrides +=  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.10.2"
+
 libraryDependencies ++= Seq(
   "commons-io" % "commons-io" % "2.6",
-  "com.google.guava" % "guava" % "15.0",
-  "org.slf4j" % "slf4j-api" % "1.7.28" % "provided",
-  "com.lihaoyi" %% "fastparse" % "2.1.3" % "provided",
-  "org.scalatest" %% "scalatest" % "3.0.8" % "test",
+  "com.google.guava" % "guava" % "28.2-jre",
+  "org.slf4j" % "slf4j-api" % "1.7.30" % "provided",
+  "com.lihaoyi" %% "fastparse" % "2.2.4" % "provided",
+  "org.scalatest" %% "scalatest" % "3.1.1" % "test",
   "com.vividsolutions" % "jts" % "1.13" % "test",
   "com.esri.geometry" % "esri-geometry-api" % "1.2.1"
 )
